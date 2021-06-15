@@ -110,7 +110,7 @@ if ~isdeployed
         warning('Parallel Computing Toolbox not found')
     end
 end
-
+% this generates the handles, saves a setting file
 handles.data = squeakData(squeakfolder);
 
 set ( hFig, 'Color', [.1 .1 .1] );

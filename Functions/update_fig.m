@@ -5,6 +5,13 @@ if isempty(handles.data.calls)
     return
 end
 
+% if we dont have enough data to build the right spectrogram, reload the
+% data
+
+if handles.data.calls.relBox(handles.data.currentcall,1)
+
+
+
 % Get spectrogram data
 [I,windowsize,noverlap,nfft,rate,box,s,fr,ti,audio,AudioRange] = CreateSpectrogram(handles.data.calls(handles.data.currentcall, :));
 
@@ -82,7 +89,6 @@ z = zeros(size(x));
 col = double(stats.Entropy < 1-handles.data.settings.EntropyThreshold);  % This is the color, vary with x in this case.
 set(handles.SNR, 'XData', [x;x], 'YData', [y;y], 'ZData', [z;z], 'CData', [col;col]);
 set(handles.axes3, 'XLim', [x(1), x(end)]);
-
 % Plot Call Position
 calltime = handles.data.calls.Box(handles.data.currentcall, 1);
 handles.CurrentCallLinePosition.XData = [calltime, calltime];
