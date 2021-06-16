@@ -9,9 +9,19 @@ if nargin == 3 % if "Load Calls" button pressed
 end
 
 handles.data.calls = [];
-handles.data.calls = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
+
+%handles.data.callsAudio=[];
+%[handles.data.calls, handles.data.callsAudio] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
+
 handles.data.currentcall=1;
 
+% now here I think I need to also merge the calls...
+try
+    [handles.data.callsMetadata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
+catch
+    handles.data.calls = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
+end
+merge_
 
 cla(handles.axes7);
 cla(handles.axes5);
