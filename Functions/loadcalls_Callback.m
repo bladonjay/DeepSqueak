@@ -17,11 +17,16 @@ handles.data.currentcall=1;
 
 % now here I think I need to also merge the calls...
 try
-    [handles.data.callsMetadata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
+    [handles.data.calls, handles.data.callsMetadata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
 catch
     handles.data.calls = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
+    [mf,md]=uigetdir(sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
+    handles.data.callsMetadata=audioinfo(fullfile(md,mf));
 end
-merge_
+
+% now remerge all the calls to see if any are overlapping
+handles.data.calls = Automerge_Callback(handles.data.calls, [], [], handles.data.callsMetadata);
+
 
 cla(handles.axes7);
 cla(handles.axes5);

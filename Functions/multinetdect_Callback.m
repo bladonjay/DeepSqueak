@@ -124,7 +124,7 @@ for j = 1:length(audioselections)
     fprintf(1,'%d Calls found in: %s \n',height(Calls),audioname)
     
     if ~isempty(Calls)
-        save(fname,'Calls','Settings','AudioFile','callsMetaData','detectiontime','networkselections','-v7.3','-mat');
+        save(fname,'Calls','Settings','AudioFile','callsMetadata','detectiontime','networkselections','-v7.3','-mat');
     end
     
     delete(h)

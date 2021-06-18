@@ -7,12 +7,6 @@ end
 
 
 
-try
-    handles.data.Calls = Automerge_Callback(handles.data.Calls, [], handles.data.callsMetadata.AudioFile);
-    fprintf('Reformed bounding boxes \n');
-end
-
-
 % Get spectrogram data
 [I,windowsize,noverlap,nfft,rate,box,s,fr,ti,audio,AudioRange] = CreateSpectrogram(handles.data.calls(handles.data.currentcall, :));
 

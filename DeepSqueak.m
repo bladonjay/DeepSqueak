@@ -392,16 +392,36 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on button press in rectangle.
+% --- Executes on button press in rectangle. (redraw button)
 function rectangle_Callback(hObject, eventdata, handles)
 % Re-draw the box
 fcn = makeConstrainToRectFcn('imrect',[handles.spect.XData(1),handles.spect.XData(end)],[handles.spect.YData(1),handles.spect.YData(end)]); %constrain to edges of window
 newbox=imrect(handles.axes1,'PositionConstraintFcn',fcn);
+% will get you the actual timestamps and freqs of the box. The reason they do the
+% difference is because for box, the x coordinate is actually the real
+% timestamp of the start of the box.
 handles.pos=getPosition(newbox);
+% why do we do the difference?
 difference = handles.pos - handles.data.calls{handles.data.currentcall, 'RelBox'};
 handles.data.calls{handles.data.currentcall, 'RelBox'} = difference + handles.data.calls{handles.data.currentcall, 'RelBox'};
 handles.data.calls{handles.data.currentcall, 'Box'} = difference + handles.data.calls{handles.data.currentcall, 'Box'};
 delete(newbox);
+
+% reform current call, if box starts before the .1 in the audio snip
+% or if box extends too close to end of audio snip
+tempcall=handles.data.calls(handles.data.currentcall,:);
+if tempcall.RelBox(1,1)<.05 ||...
+    tempcall.RelBox(1,1)+tempcall.RelBox(1,3)+.05 > length(tempcall.Audio{1})/tempcall.Rate(1)
+
+    
+    WindL=round((tempcall.Box(1,1)-.05)* tempcall.Rate);
+    WindR=round((tempcall.Box(1,1)+tempcall.Box(1,3)+0.05) * tempcall.Rate);
+    WindR = min(WindR,handles.data.callsMetadata.TotalSamples); % Prevent WindR from being greater than total samples
+    
+    handles.data.calls.Audio{handles.data.currentcall} = mergeAudio(handles.data.callsMetadata.Filename, [WindL WindR]);
+    fprintf('Reformed bounding boxes \n');
+end
+
 update_fig(hObject, eventdata, handles);
 
 % --------------------------------------------------------------------

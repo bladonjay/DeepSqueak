@@ -6,6 +6,8 @@ AllScores=AllScores(index);
 AllClass=AllClass(index);
 AllPowers=AllPowers(index);
 
+% delete bad boxes???
+
 % Find all the boxes that overlap in time
 OverBoxes=single(AllBoxes);
 
@@ -109,11 +111,8 @@ for i = 1:length(begin_time)
 
     
     Calls(i,:) = {
-        % samplerate
         audio_info.SampleRate,...
-        % box
         [begin_time(i), lower_freq(i), duration__(i), bandwidth_(i)],...
-        % relbox... why is relbox
         [duration__(i), lower_freq(i), duration__(i), bandwidth_(i)],...
         call_score(i,:),...
         {audio},...
