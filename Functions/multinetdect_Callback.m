@@ -1,4 +1,5 @@
 % --- Executes on button press in multinetdect.
+% uses automerge callback
 function multinetdect_Callback(hObject, eventdata, handles, SingleDetect)
 if isempty(handles.audiofiles)
     errordlg('No Audio Selected')
@@ -109,7 +110,7 @@ for j = 1:length(audioselections)
     
     
     h = waitbar(1,'Saving...');
-    Calls = Automerge_Callback(Calls, [], AudioFile);
+    
     
     %% Save the file
     
@@ -123,7 +124,9 @@ for j = 1:length(audioselections)
     % Display the number of calls
     fprintf(1,'%d Calls found in: %s \n',height(Calls),audioname)
     
+    % if there are calls, save out
     if ~isempty(Calls)
+        Calls = Automerge_Callback(Calls, [], AudioFile,2);
         save(fname,'Calls','Settings','AudioFile','callsMetadata','detectiontime','networkselections','-v7.3','-mat');
     end
     

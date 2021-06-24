@@ -20,7 +20,7 @@ try
     [handles.data.calls, handles.data.callsMetadata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
 catch
     handles.data.calls = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
-    [mf,md]=uigetdir(sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
+    [mf,md]=uigetfile(sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
     handles.data.callsMetadata=audioinfo(fullfile(md,mf));
 end
 
