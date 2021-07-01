@@ -20,10 +20,14 @@ try
     [handles.data.calls, handles.data.callsMetadata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
 catch
     handles.data.calls = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
-    [mf,md]=uigetfile(sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
+    [mf,md]=uigetfile('*.wav',sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
     handles.data.callsMetadata=audioinfo(fullfile(md,mf));
 end
 
+if ~isfile(handles.data.callsMetadata.Filename)
+    [mf,md]=uigetfile('*.wav',sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
+    handles.data.callsMetadata=audioinfo(fullfile(md,mf));
+end
 % now remerge all the calls to see if any are overlapping
 handles.data.calls = Automerge_Callback(handles.data.calls, [], [], handles.data.callsMetadata);
 

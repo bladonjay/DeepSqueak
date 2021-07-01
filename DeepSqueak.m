@@ -433,7 +433,7 @@ if newboxpos(1)<margin ||...
     handles.data.calls{handles.data.currentcall,'RelBox'}=[margin newboxpos(2:end)];
     % clean up and print
 
-    fprintf('Reformed bounding boxes \n');
+    fprintf('Reformed bounding box \n');
 else
     clipStart=handles.data.calls{CallNum, 'Box'}(1)-handles.data.calls{CallNum, 'RelBox'}(1);
     callStart=clipStart+newboxpos(1);
