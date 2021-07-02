@@ -64,7 +64,7 @@ else
     handles.detectionfiles=dir([handles.data.settings.detectionfolder '/*.mat*']);
     
     % Sort the detection files by date modified
-    [~, idx] = sort([handles.detectionfiles.datenum],'descend');
+    [~, idx] = sort([handles.detectionfiles.datenum],'ascend');
     handles.detectionfiles = handles.detectionfiles(idx);
     
     handles.detectionfilesnames = {handles.detectionfiles.name};
