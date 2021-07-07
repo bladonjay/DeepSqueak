@@ -1,5 +1,5 @@
 % --- Executes on button press in LOAD CALLS.
-function loadcalls_Callback(hObject, eventdata, handles,call_file_number)
+function loadcalls_Callback(hObject, eventdata, handles)
 h = waitbar(0,'Loading Calls Please wait...');
 update_folders(hObject, eventdata, handles);
 handles = guidata(hObject);
@@ -8,10 +8,12 @@ if nargin == 3 % if "Load Calls" button pressed
     handles.current_detection_file = handles.detectionfiles(handles.current_file_id).name;
 end
 
+% load the audiofile data, maybe also load the audio data too...
 handles.data.calls = [];
 
 %handles.data.callsAudio=[];
 %[handles.data.calls, handles.data.callsAudio] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
+
 
 handles.data.currentcall=1;
 
