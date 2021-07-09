@@ -1,13 +1,13 @@
 % --- Executes on button press in LOAD CALLS.
 function loadcalls_Callback(hObject, eventdata, handles,call_file_number)
-h = waitbar(0,'Loading Calls Please wait...');
+
 update_folders(hObject, eventdata, handles);
 handles = guidata(hObject);
 if nargin == 3 % if "Load Calls" button pressed
     handles.current_file_id = get(handles.popupmenuDetectionFiles,'Value');
     handles.current_detection_file = handles.detectionfiles(handles.current_file_id).name;
 end
-
+h = waitbar(0,sprintf('Loading Call file %s \n Please wait...', handles.current_detection_file));
 handles.data.calls = [];
 
 %handles.data.callsAudio=[];
@@ -16,17 +16,27 @@ handles.data.calls = [];
 handles.data.currentcall=1;
 
 % now here I think I need to also merge the calls...
-try
-    [handles.data.calls, handles.data.callsMetadata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
-catch
-    handles.data.calls = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
-    [mf,md]=uigetfile('*.wav',sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
-    handles.data.callsMetadata=audioinfo(fullfile(md,mf));
-end
+[handles.data.calls, handles.data.callsMetadata] = loadCallfile(fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file));
 
-if ~isfile(handles.data.callsMetadata.Filename)
-    [mf,md]=uigetfile('*.wav',sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
+% does metadata have a valid filename?
+try
+    assert(isfile(handles.data.callsMetadata.Filename));
+catch
+    % find the file on your own
+    try
+        callfile=fullfile(handles.detectionfiles(handles.current_file_id).folder,  handles.current_detection_file);
+        % find all the files in that folder that are .wav files
+        candidates=getAllFiles(handles.detectionfiles(handles.current_file_id).folder,'.wav');
+        % find the original wav file that contains 100% of the filename
+        for i=1:length(candidates)
+            matchct(i)=startsWith(callfile,candidates{i}(1:end-4));
+        end
+        handles.data.callsMetadata=audioinfo(candidates{matchct});
+    catch
+        % if no more options, ask
+    [mf,md]=uigetfile('.wav',sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
     handles.data.callsMetadata=audioinfo(fullfile(md,mf));
+    end
 end
 % now remerge all the calls to see if any are overlapping
 handles.data.calls = Automerge_Callback(handles.data.calls, [], [], handles.data.callsMetadata);

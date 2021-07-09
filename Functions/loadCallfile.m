@@ -1,5 +1,7 @@
 function [Calls,callsMetadata] = loadCallfile(filename)
 
+Calls=[];
+callsMetadata=[];
 try
     load(filename, 'Calls', 'callsMetadata');
 catch

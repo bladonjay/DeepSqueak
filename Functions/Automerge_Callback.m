@@ -3,13 +3,32 @@ function Calls = Automerge_Callback(Calls1,Calls2,AudioFile,audioMetadata,mergeo
 
 Calls=[Calls1; Calls2];
 
-% Audio info (you can also just pull this from the call data, callMetadata)
-try
-    audio_info=audioMetadata;
-catch
-    audio_info = audioinfo(AudioFile);
+%first try the audiofile input
+if isstring(AudioFile)
+    audioOK= isfile(AudioFile);
+else
+    audioOK=0;
 end
-%% Merge overlapping boxes
+% if that doesnt work, now try the struct
+if ~audioOK && isstruct(audioMetadata)
+    try
+        AudioFile=audioMetadata.Filename;
+        audioOK= isfile(AudioFile);
+        audio_info=audioMetadata;
+    catch
+        audioOK=0;
+    end
+else
+    audio_info=audioMetadata;
+end
+% if neither worked, pull your file
+if ~audioOK
+    [AudioFile,AudioDir]=uigetfile('*.wav','Load Audio File');
+    audio_info = audioinfo(fullfile(AudioDir,AudioFile));
+end
+
+
+
 
 %% delete bad calls?
 if ~exist('mergeopt','var')
@@ -27,6 +46,7 @@ elseif mergeopt==2
     Calls=Calls(Calls.Accept==1,:);
 end
 
+%% Merge overlapping boxes
     
 Calls = merge_boxes(Calls.Box, Calls.Score, Calls.Type, Calls.Power, audio_info, 1, 0, 0);
 %calls2=merge_boxes2(Calls,audio_info,1,0,0,0);

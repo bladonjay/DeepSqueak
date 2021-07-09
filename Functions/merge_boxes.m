@@ -46,7 +46,7 @@ bandwidth_ = high_freq_ - lower_freq;
 
 %% Do score cutoff
 Accepted = call_score>score_cuttoff;
-if ~any(Accepted); close(h); return; end
+%if ~any(Accepted); close(h); return; end
 begin_time = begin_time(Accepted);
 end_time__ = end_time__(Accepted);
 lower_freq = lower_freq(Accepted);

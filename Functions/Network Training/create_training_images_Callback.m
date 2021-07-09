@@ -40,15 +40,15 @@ c=0;
 for k = 1:length(trainingdata)
     TTable = table({},{},'VariableNames',{'imageFilename','USV'});
     
-    Calls = loadCallfile([trainingpath trainingdata{k}]);
-
+    [Calls,CallsMeta] = loadCallfile([trainingpath trainingdata{k}]);
+    fprintf('%s \n', fullfile(trainingpath,trainingdata{k}));
     
     [p, filename] = fileparts(trainingdata{k});
     fname = fullfile(handles.data.squeakfolder,'Training','Images',filename);
     mkdir(fname);
     
-    % Remove Rejects
-    Calls = Calls(Calls.Accept == 1, :);
+    % Remove Rejects and merge overlaps
+    Calls = Automerge_Callback(Calls,[],CallsMeta.Filename,CallsMeta,2);
     
     % Find max call frequency for cutoff
     maxFR = max(sum(Calls.Box(:,[2,4])));

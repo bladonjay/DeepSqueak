@@ -30,7 +30,7 @@ end
 if ~strcmp(warningmsg,'Train anyway'); return; end
 
 %% Train the network
-choice = questdlg(['Train from existing network?'], ...
+choice = questdlg('Train from existing network?', ...
     'Yes', 'No');
 switch choice
     case 'Yes'
