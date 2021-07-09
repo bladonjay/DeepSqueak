@@ -65,7 +65,7 @@ disp '  '
 % Set Handles
 hFig = hObject;
 handles.hFig=hFig;
-% Create a class to hold the data
+% Create a class to hold the data (with this function as the root)
 squeakfolder = fileparts(mfilename('fullpath'));
 
 % Add to MATLAB path and check for toolboxes
@@ -110,7 +110,7 @@ if ~isdeployed
         warning('Parallel Computing Toolbox not found')
     end
 end
-
+% this generates the handles, saves a setting file
 handles.data = squeakData(squeakfolder);
 
 set ( hFig, 'Color', [.1 .1 .1] );
@@ -192,9 +192,13 @@ set(handles.axes3,'YTick',[]);
 
 
 
+% is this necessary?
 function varargout = DeepSqueak_OutputFcn(hObject, eventdata, handles)
 
 varargout{1} = handles.output;
+
+
+
 
 % --- Executes on button press in PlayCall.
 function PlayCall_Callback(hObject, eventdata, handles)

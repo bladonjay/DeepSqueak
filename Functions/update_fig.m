@@ -84,7 +84,6 @@ z = zeros(size(x));
 col = double(stats.Entropy < 1-handles.data.settings.EntropyThreshold);  % This is the color, vary with x in this case.
 set(handles.SNR, 'XData', [x;x], 'YData', [y;y], 'ZData', [z;z], 'CData', [col;col]);
 set(handles.axes3, 'XLim', [x(1), x(end)]);
-
 % Plot Call Position
 calltime = handles.data.calls.Box(handles.data.currentcall, 1);
 handles.CurrentCallLinePosition.XData = [calltime, calltime];

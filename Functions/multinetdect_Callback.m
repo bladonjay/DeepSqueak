@@ -81,9 +81,11 @@ for j = 1:length(audioselections)
         NeuralNetwork=load(networkpath);%get currently selected option from menu
         close(h);
         % append, and grab the filedata
+
         Callsi= SqueakDetect(AudioFile,NeuralNetwork,handles.audiofiles(CurrentAudioFile).name,Settings(:,k),j,length(audioselections),networkname,handles.optimization_slider.Value);
         
         Calls= [Calls; Callsi];
+
     end
     clear Callsi
     
