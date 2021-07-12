@@ -32,6 +32,10 @@ if ~strcmp(warningmsg,'Train anyway'); return; end
 %% Train the network
 choice = questdlg('Train from existing network?', ...
     'Yes', 'No');
+% generate a full file path before running so you dont have to have it hang
+% before it saves
+[FileName,PathName] = uiputfile(fullfile(handles.data.settings.networkfolder,'*.mat'),'Save New Network');
+
 switch choice
     case 'Yes'
         [NetName NetPath] = uigetfile(handles.data.settings.networkfolder,'Select Existing Network');
@@ -42,7 +46,6 @@ switch choice
 end
 
 %% Save the new network
-[FileName,PathName] = uiputfile(fullfile(handles.data.settings.networkfolder,'*.mat'),'Save New Network');
 wind = max(AllSettings(:,1));
 noverlap = max(AllSettings(:,2));
 nfft = max(AllSettings(:,3));
