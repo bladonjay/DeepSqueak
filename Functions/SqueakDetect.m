@@ -12,16 +12,18 @@ end
 
 % Get network and spectrogram settings
 network=networkfile.detector;
-wind=networkfile.wind;
-noverlap=networkfile.noverlap;
-nfft=networkfile.nfft;
+% get the spectrogram settings in seconds
+wind=networkfile.wind; % the hamming window size
+noverlap=networkfile.noverlap; % the overlap between windows
+nfft=networkfile.nfft; % the number of fourier freqs between length and n
 
 
 % Adjust settings, so spectrograms are the same for different sample rates
+% these are in samples now
 wind = round(wind * audio_info.SampleRate);
 noverlap = round(noverlap * audio_info.SampleRate);
-nfft = round(nfft * audio_info.SampleRate);
-
+nfft = round(nfft * audio_info.SampleRate)*2;
+% nfft=audio_info.SampleRate*.2;
 %% Get settings
 % (1) Detection length (s)
 if Settings(1)>audio_info.Duration

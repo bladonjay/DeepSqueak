@@ -41,14 +41,17 @@ catch
         end
         handles.data.callsMetadata=audioinfo(candidates{matchct});
     catch
+        try
         % if no more options, ask
-    [mf,md]=uigetfile('.wav',sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
-    handles.data.callsMetadata=audioinfo(fullfile(md,mf));
-    end
+            [mf,md]=uigetfile('.wav',sprintf('Load wav file matching %s',handles.detectionfiles(handles.current_file_id).name));
+             handles.data.callsMetadata=audioinfo(fullfile(md,mf));
+        end
+        end
 end
+try
 % now remerge all the calls to see if any are overlapping
 handles.data.calls = Automerge_Callback(handles.data.calls, [], [], handles.data.callsMetadata);
-
+end
 
 cla(handles.axes7);
 cla(handles.axes5);

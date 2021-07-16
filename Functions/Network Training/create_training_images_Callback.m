@@ -47,9 +47,10 @@ for k = 1:length(trainingdata)
     fname = fullfile(handles.data.squeakfolder,'Training','Images',filename);
     mkdir(fname);
     
-    % Remove Rejects and merge overlaps
-    Calls = Automerge_Callback(Calls,[],CallsMeta.Filename,CallsMeta,2);
-    
+    try
+        % Remove Rejects and merge overlaps
+        Calls = Automerge_Callback(Calls,[],CallsMeta.Filename,CallsMeta,2);
+    end
     % Find max call frequency for cutoff
     maxFR = max(sum(Calls.Box(:,[2,4])));
     %cutoff = min([Calls.Rate, maxFR*2000]) / 2;

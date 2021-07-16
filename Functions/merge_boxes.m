@@ -21,7 +21,7 @@ end
 overlapRatio = bboxOverlapRatio(OverBoxes, OverBoxes);
 
 % Merge all boxes with overlap ratio greater than 0.2 (Currently off)
-OverlapMergeThreshold = .15;
+OverlapMergeThreshold = .1;
 overlapRatio(overlapRatio<OverlapMergeThreshold)=0;
 
 % Create a graph with the connected boxes
