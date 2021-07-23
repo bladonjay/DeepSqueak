@@ -30,7 +30,7 @@ for j = 1:length(selections) % Do this for each file
     currentfile = selections(j);
     lastwarn(''); % Skip files if variable: 'Calls' doesn't exist
     fname = fullfile(handles.detectionfiles(currentfile).folder, handles.detectionfiles(currentfile).name);
-    Calls = loadCallfile(fname);
+    [Calls,callsMetadata] = loadCallfile(fname);
 
     
     for i = 1:height(Calls)   % For Each Call
@@ -63,7 +63,7 @@ for j = 1:length(selections) % Do this for each file
             Calls.Accept(i) = 0;
         end
     end
-    save(fname,'Calls','-v7.3');
+    save(fname,'Calls','callsMetadata','-v7.3');
 end
 close(h)
 

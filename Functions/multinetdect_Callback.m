@@ -129,7 +129,7 @@ for j = 1:length(audioselections)
     
     % if there are calls, save out
     if ~isempty(Calls)
-        Calls = Automerge_Callback(Calls, [], AudioFile);
+        Calls = Automerge_Callback(Calls, [], AudioFile, [], 2);
         save(fname,'Calls','Settings','AudioFile','callsMetadata','detectiontime','networkselections','-v7.3','-mat');
     end
     
