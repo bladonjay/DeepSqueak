@@ -1,12 +1,22 @@
-function Calls = merge_boxes(AllBoxes, AllScores, AllClass, AllPowers, audio_info, merge_in_frequency, score_cuttoff, pad_calls)
+function Calls = merge_boxes2(Calls, audio_info, merge_in_frequency, score_cuttoff, pad_calls)
 %% Merge overlapping boxes
+
+% split good from bad
+badCalls=Calls(Calls.Accept==0,:);
+Calls=Calls(Calls.Accept==1,:);
+
 % Sort the boxes by start time
-[AllBoxes,index] = sortrows(AllBoxes);
-AllScores=AllScores(index);
-AllClass=AllClass(index);
-AllPowers=AllPowers(index);
+[AllBoxes,index] = sortrows(Calls,'Box'); % sort by time
+
+
+AllScores=AllBoxes.Score;
+AllClass=AllBoxes.Type;
+AllPowers=AllBoxes.Power;
+AllAccepted=AllBoxes.Accept;
 
 % delete bad boxes???
+% well, we should probably keep their labels
+
 
 % Find all the boxes that overlap in time
 OverBoxes=single(AllBoxes);
@@ -21,7 +31,7 @@ end
 overlapRatio = bboxOverlapRatio(OverBoxes, OverBoxes);
 
 % Merge all boxes with overlap ratio greater than 0.2 (Currently off)
-OverlapMergeThreshold = .1;
+OverlapMergeThreshold = .15;
 overlapRatio(overlapRatio<OverlapMergeThreshold)=0;
 
 % Create a graph with the connected boxes
@@ -45,8 +55,9 @@ duration__ = end_time__ - begin_time;
 bandwidth_ = high_freq_ - lower_freq;
 
 %% Do score cutoff
-Accepted = call_score>score_cuttoff;
-%if ~any(Accepted); close(h); return; end
+Accepted = call_score>score_cuttoff; % only take ones with many that are accepted
+
+if ~any(Accepted); close(h); return; end
 begin_time = begin_time(Accepted);
 end_time__ = end_time__(Accepted);
 lower_freq = lower_freq(Accepted);
@@ -78,6 +89,11 @@ high_freq_ = min(high_freq_,audio_info.SampleRate./2000 - 1);
 duration__ = end_time__ - begin_time;
 bandwidth_ = high_freq_ - lower_freq;
 
+
+
+
+% im really not sure what the fuck this is....
+%{
 Calls = table('Size',[length(begin_time), 14], 'VariableTypes',...
     {'double',...
     'double', 'double', 'double', 'double',...
@@ -121,3 +137,30 @@ for i = 1:length(begin_time)
         1,...
         };
 end
+%}
+Calls = table('Rate',Rate);
+for i=1:length(Calls)
+    % Audio beginning and end time
+    WindL=round((begin_time(i)-duration__(i)) .* audio_info.SampleRate);
+    WindR=round((end_time__(i)+duration__(i)) .* audio_info.SampleRate);
+    WindR = min(WindR,audio_info.TotalSamples); % Prevent WindR from being greater than total samples
+    
+    audio = mergeAudio(audio_info.Filename, [WindL WindR]);
+    Calls.Rate(i)=audio_info.SampleRate;
+    Calls.Box(i,:)=[begin_time(i), lower_freq(i), duration__(i), bandwidth_(i)];
+    Calls.RelBox(i,:)=[duration__(i), lower_freq(i), duration__(i), bandwidth_(i)];
+    Calls.Score(i,:)=call_score(i,:);
+    Calls.Audio{i}=audio;
+    Calls.Type(i)=call_Class(i);
+    Calls.Power(i)=call_power(i);
+    Calls.Accept(i)=Accepted(i);
+end
+
+% fold bad calls back in after NOT merging them
+Calls = sortrows([Calls; badCalls],'Box'); % sort by time
+
+
+end
+
+
+

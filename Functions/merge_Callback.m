@@ -40,7 +40,8 @@ clear('Calls')
 waitbar(.5,hc,'Writing Output Structure');
 Calls = merge_boxes(AllBoxes, AllScores .* AllAccept, AllClass, AllPower, audio_info, 1, 0, 0);
 
-[FileName, PathName] = uiputfile(fullfile(handles.data.settings.detectionfolder, '*.mat'), 'Save Merged Detections');
+[FileName, PathName] = uiputfile(fullfile(handles.data.settings.detectionfolder, '*.mat'),...
+    'Save Merged Detections',fullfile(detectionFilepath, detectionFilename{1}));
 waitbar(1/2, hc, 'Saving...');
 save(fullfile(PathName, FileName),'Calls','-v7.3');
 update_folders(hObject, eventdata, handles);

@@ -105,7 +105,7 @@ if ~isdeployed
     end
     
     try
-        verLessThan('distcomp','1');
+        verLessThan('parallel','1');
     catch
         warning('Parallel Computing Toolbox not found')
     end
@@ -337,6 +337,7 @@ switch eventdata.Character
 end
 % drawnow
 
+% need to figure this one out...
 function figure1_KeyPressFcn(hObject, eventdata, handles)
 
 % --- Executes on selection change in popupmenuColorMap.
@@ -396,17 +397,90 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on button press in rectangle.
+% --- Executes on button press in rectangle. (redraw button)
 function rectangle_Callback(hObject, eventdata, handles)
-% Re-draw the box
-fcn = makeConstrainToRectFcn('imrect',[handles.spect.XData(1),handles.spect.XData(end)],[handles.spect.YData(1),handles.spect.YData(end)]); %constrain to edges of window
-newbox=imrect(handles.axes1,'PositionConstraintFcn',fcn);
-handles.pos=getPosition(newbox);
-difference = handles.pos - handles.data.calls{handles.data.currentcall, 'RelBox'};
-handles.data.calls{handles.data.currentcall, 'RelBox'} = difference + handles.data.calls{handles.data.currentcall, 'RelBox'};
-handles.data.calls{handles.data.currentcall, 'Box'} = difference + handles.data.calls{handles.data.currentcall, 'Box'};
+% Re-draw the box... this is the old way
+%fcn = makeConstrainToRectFcn('imrect',[handles.spect.XData(1),handles.spect.XData(end)],[handles.spect.YData(1),handles.spect.YData(end)]); %constrain to edges of window
+%newbox=imrect(handles.axes1,'PositionConstraintFcn',fcn);
+%handles.pos=getPosition(newbox);
+CallNum=handles.data.currentcall;
+margin=0.1;
+newbox=drawrectangle(handles.axes1,'Color',[0 1 0]);
+newboxpos=newbox.Position;
+
+
+% will get you the actual timestamps and freqs of the box. The reason they do the
+% difference is because for box, the x coordinate is actually the real
+% timestamp of the start of the box.
+
+
+
+% whats the clip start time (get real time of box start, - the relative
+% position
+
+% reform current call, if box starts before the .1 in the audio snip
+% or if box extends too close to end of audio snip
+if newboxpos(1)<margin ||...
+    newboxpos(1)+newboxpos(3)+margin > length(handles.data.calls.Audio{CallNum})/handles.data.calls.Rate(CallNum)
+
+    % first get clipstart
+    clipStart=handles.data.calls{CallNum, 'Box'}(1)-handles.data.calls{CallNum, 'RelBox'}(1);
+    callStart=clipStart+newboxpos(1); % real timestamp of the new call
+    % back everything up to 0.05
+    WindL=round((callStart-margin)* handles.data.calls.Rate(CallNum));
+    WindR=round((callStart+newboxpos(3)+margin) * handles.data.calls.Rate(CallNum));
+    WindR = min(WindR,handles.data.callsMetadata.TotalSamples); % Prevent WindR from being greater than total samples
+    % the audio clip changes the box position though...
+    newboxpos(1)=callStart; % adjust for the box
+    handles.data.calls.Audio{handles.data.currentcall} = mergeAudio(handles.data.callsMetadata.Filename, [WindL WindR]);
+    handles.data.calls{handles.data.currentcall,'Box'}=newboxpos;
+    handles.data.calls{handles.data.currentcall,'RelBox'}=[margin newboxpos(2:end)];
+    % clean up and print
+
+    fprintf('Reformed bounding box \n');
+else
+    clipStart=handles.data.calls{CallNum, 'Box'}(1)-handles.data.calls{CallNum, 'RelBox'}(1);
+    callStart=clipStart+newboxpos(1);
+    handles.data.calls{handles.data.currentcall,'RelBox'}=newboxpos;
+    handles.data.calls{handles.data.currentcall,'Box'}=[callStart newboxpos(2:end)];
+end
 delete(newbox);
 update_fig(hObject, eventdata, handles);
+
+%{
+first run guide(DeepSqueak.fig) to edit the play call box into add call box
+then generate code to add a call.  you only need to do this once becauese
+you can do it recursively.
+
+
+function AddCall_Callback
+newbox=drawrectangle(handles.axis1,'Color',[1 0 0]);
+% will get you the actual timestamps and freqs of the box. The reason they do the
+% difference is because for box, the x coordinate is actually the real
+% timestamp of the start of the box.
+handles.pos=newbox.Position;
+% why do we do the difference?
+difference = handles.pos - handles.data.calls{handles.data.currentcall, 'RelBox'};
+newbox.RelBox = difference + handles.data.calls{handles.data.currentcall, 'RelBox'};
+newbox.Box = difference + handles.data.calls{handles.data.currentcall, 'Box'};
+
+
+% reform current call, if box starts before the .1 in the audio snip
+% or if box extends too close to end of audio snip
+tempcall=handles.data.calls(handles.data.currentcall,:);
+if tempcall.RelBox(1,1)<.05 ||...
+    tempcall.RelBox(1,1)+tempcall.RelBox(1,3)+.05 > length(tempcall.Audio{1})/tempcall.Rate(1)
+
+    
+    WindL=round((tempcall.Box(1,1)-.05)* tempcall.Rate);
+    WindR=round((tempcall.Box(1,1)+tempcall.Box(1,3)+0.05) * tempcall.Rate);
+    WindR = min(WindR,handles.data.callsMetadata.TotalSamples); % Prevent WindR from being greater than total samples
+    
+    handles.data.calls.Audio{handles.data.currentcall} = mergeAudio(handles.data.callsMetadata.Filename, [WindL WindR]);
+    fprintf('Reformed bounding boxes \n');
+end
+delete(newbox);
+%}
 
 % --------------------------------------------------------------------
 function select_audio_Callback(hObject, eventdata, handles)

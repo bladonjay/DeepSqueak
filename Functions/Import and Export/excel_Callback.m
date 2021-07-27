@@ -23,7 +23,11 @@ for j = 1:length(fname) % Do this for each file
     currentfile = fullfile(fpath,fname{j});
     Calls = loadCallfile(currentfile);
     
-    exceltable = [{'ID'} {'Label'} {'Accepted'} {'Score'}  {'Begin Time (s)'} {'End Time (s)'} {'Call Length (s)'} {'Principal Frequency (kHz)'} {'Low Freq (kHz)'} {'High Freq (kHz)'} {'Delta Freq (kHz)'} {'Frequency Standard Deviation (kHz)'} {'Slope (kHz/s)'} {'Sinuosity'} {'Mean Power (dB/Hz)'} {'Tonality'}];
+    exceltable = [{'ID'} {'Label'} {'Accepted'} {'Score'}  {'Begin Time (s)'}...
+        {'End Time (s)'} {'Call Length (s)'} {'Principal Frequency (kHz)'}...
+        {'Low Freq (kHz)'} {'High Freq (kHz)'} {'Delta Freq (kHz)'}...
+        {'Frequency Standard Deviation (kHz)'} {'Slope (kHz/s)'} {'Sinuosity'}...
+        {'Mean Power (dB/Hz)'} {'Tonality'}];
     for i = 1:height(Calls) % Do this for each call
         waitbar(i/height(Calls),hc,['Calculating call statistics for file ' num2str(j) ' of ' num2str(length(fname))]);
         
@@ -31,13 +35,18 @@ for j = 1:length(fname) % Do this for each file
             % Get spectrogram data
             [I,windowsize,noverlap,nfft,rate,box] = CreateSpectrogram(Calls(i, :));
             % Calculate statistics
-            stats = CalculateStats(I,windowsize,noverlap,nfft,rate,box,handles.data.settings.EntropyThreshold,handles.data.settings.AmplitudeThreshold);
+            stats = CalculateStats(I,windowsize,noverlap,nfft,rate,box,...
+                handles.data.settings.EntropyThreshold,handles.data.settings.AmplitudeThreshold);
             
             ID = i;
             Label = Calls.Type(i);
             Score = Calls.Score(i);
             accepted = Calls.Accept(i);
-            exceltable = [exceltable; {ID} {Label} {accepted} {Score} {stats.BeginTime} {stats.EndTime} {stats.DeltaTime} {stats.PrincipalFreq} {stats.LowFreq} {stats.HighFreq} {stats.DeltaFreq} {stats.stdev} {stats.Slope} {stats.Sinuosity} {stats.MaxPower} {stats.SignalToNoise}];
+            exceltable = [exceltable; {ID} {Label} {accepted} {Score}...
+                {stats.BeginTime} {stats.EndTime} {stats.DeltaTime}...
+                {stats.PrincipalFreq} {stats.LowFreq} {stats.HighFreq}...
+                {stats.DeltaFreq} {stats.stdev} {stats.Slope}...
+                {stats.Sinuosity} {stats.MaxPower} {stats.SignalToNoise}];
         end
         
     end
@@ -50,9 +59,12 @@ for j = 1:length(fname) % Do this for each file
     if exist(outputName, 'file')==2
         delete(outputName);
     end
-    
+
     writetable(t,outputName,'WriteVariableNames',0');
+        
     
+    outputName2 = fullfile(PathName,[FileName '_StatsTable']);
+    save(outputName2,'stats');
 end
 close(hc);
 guidata(hObject, handles);

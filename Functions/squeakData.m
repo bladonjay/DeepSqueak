@@ -1,6 +1,7 @@
 classdef squeakData < handle
     properties
         calls
+        callsMetadata
         currentcall = 1
         cmap = 'inferno'
         cmapName = {'inferno'}

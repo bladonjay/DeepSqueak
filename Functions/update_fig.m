@@ -5,11 +5,6 @@ if isempty(handles.data.calls)
     return
 end
 
-% if we dont have enough data to build the right spectrogram, reload the
-% data
-
-if handles.data.calls.relBox(handles.data.currentcall,1)
-
 
 
 % Get spectrogram data

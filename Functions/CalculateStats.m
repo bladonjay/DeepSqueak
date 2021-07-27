@@ -1,6 +1,6 @@
 function stats = CalculateStats(I,windowsize,noverlap,nfft,SampleRate,Box,EntropyThreshold,AmplitudeThreshold,verbose)
 if nargin <= 8
-    verbose = 1;
+    verbose = 0;
 end
 
 
@@ -14,11 +14,40 @@ stats.Entropy = smooth(stats.Entropy,3)';
 [amplitude,ridgeFreq] = max((I));
 amplitude = smooth(amplitude,3)';
 
+
+% one method of getting the EntropyThreshold
+% now get top and bottom quartiles
+
+myopt=3; % 3 is the standard method
+if myopt==1
+    quartiles=prctile(stats.Entropy,[30 90]); % get top quartile and bottom quartile
+    % now get the mean of each of those
+    qmean=nanmean(stats.Entropy(stats.Entropy<quartiles(1)));
+    qmean(2)=nanmean(stats.Entropy(stats.Entropy>quartiles(2)));
+    % now split the differencde
+    EntropyThreshold=1-nanmean(qmean);
+    
+elseif myopt==2
+    % another method
+    mydata=sort(stats.Entropy);
+    [crit]=elbow_method(mydata,1:length(mydata),[],true);
+    EntropyThreshold=1-mydata(crit);
+    
+end
+
+zcrit=nanmean(I(:))+2*nanstd(I(:));
+okz=sum(I>zcrit)>0;
+%EntropyThreshold=max(stats.Entropy(okz));
 % Get index of the time points where entropy and aplitude are greater than their thesholds
 % iteratively lower threshholds until at least 6 points are selected
 iter = 0;
+
+
+
+
 greaterthannoise = false(1, size(I, 2));
 while sum(greaterthannoise)<5
+    % either amplitude thresh or entropy threshold
     greaterthannoise = greaterthannoise | 1-stats.Entropy > EntropyThreshold   / 1.1 ^ iter;
     greaterthannoise = greaterthannoise & amplitude       > AmplitudeThreshold / 1.1 ^ iter;
     if iter > 10
@@ -26,10 +55,11 @@ while sum(greaterthannoise)<5
         greaterthannoise = true(1, size(I, 2));
         break;
     end
-    iter = iter + 1;
+   
     if iter > 1
         disp('lowering threshold')
     end
+    iter = iter + 1;
 end
 
 % index of time points
@@ -44,7 +74,27 @@ catch
 end
 
 
-%% Calculate the scaling factors of the spectrogram
+
+if verbose==1
+    figure;
+    sp=subplot(3,2,1);
+    imagesc(I);
+    sp(2)=subplot(3,2,3);
+    plot(stats.Entropy);
+    hold on; plot(find([1-stats.Entropy]>EntropyThreshold),...
+        [1-stats.Entropy([1-stats.Entropy]>EntropyThreshold)],'r.');
+    % how would we find the amplitude for that?
+    sp(3)=subplot(3,2,2);
+    imagesc(I>prctile(I(:),99));
+    sp(4)=subplot(3,2,5);
+    imagesc(I>zcrit);
+    sp(5)=plot(stats.ridgeTime,stats.ridgeFreq_smooth);
+    
+    linkaxes(sp,'x'); set(sp(4),'YLim',get(sp(1),'YLim'),'YDir','reverse');
+    close(gcf);
+    
+end
+%% Calculate the scaling factors of the spectrogram 2k because of nyquist?
 spectrange = SampleRate / 2000; % get frequency range of spectrogram in KHz
 FreqScale = spectrange / (1 + floor(nfft / 2)); % kHz per pixel
 TimeScale = (windowsize - noverlap) / SampleRate; % seconds per pixel
