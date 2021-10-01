@@ -115,7 +115,7 @@ for currentfile = selections % Do this for each file
                     testValue = stats.PrincipalFreq;
                     if ischar(rule{4}); rule{4}=str2num(rule{4}); end
                 case 'Power (dB/Hz)'
-                    testValue = stats.MaxPower;
+                    testValue = stats.MeanPower;
                     if ischar(rule{4}); rule{4}=str2num(rule{4}); end
                 case 'Duration (s)'
                     testValue = stats.DeltaTime;
@@ -158,6 +158,7 @@ end
 close(h);
 
 %update the display
-if isfield(handles,'current_detection_file') && any(ismember(handles.detectionfilesnames(selections),handles.current_detection_file))
-    loadcalls_Callback(hObject, eventdata, handles, handles.current_file_id)
+update_folders(hObject, eventdata, handles);
+if isfield(handles,'current_detection_file')
+    loadcalls_Callback(hObject, eventdata, handles, true)
 end

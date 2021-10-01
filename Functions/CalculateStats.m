@@ -7,36 +7,12 @@ end
 % Calculate entropy at each time point
 stats.Entropy = geomean(I,1) ./ mean(I,1);
 stats.Entropy = smooth(stats.Entropy,0.1,'rlowess')';
-% % EntropyThreshold=prctile(1-stats.Entropy,20);
-% % Find maximum amplitude and corresponding at each time point
-% [amplitude,ridgeFreq] = max((I));
-% amplitude = smooth(amplitude,0.1,'rlowess')';
-% 
-% % Get index of the time points where entropy and aplitude are greater than their thesholds
-% % iteratively lower threshholds until at least 6 points are selected
-% iter = 0;
-% greaterthannoise = false(1, size(I, 2));
-% while sum(greaterthannoise)<5
-%     greaterthannoise = greaterthannoise | 1-stats.Entropy > EntropyThreshold   / 1.1 ^ iter;
-%     greaterthannoise = greaterthannoise & amplitude       > AmplitudeThreshold / 1.1 ^ iter;
-%     if iter > 10
-% %         disp('Could not detect contour')
-%         greaterthannoise = true(1, size(I, 2));
-%         break;
-%     end
-%     iter = iter + 1;
-%     if iter > 1
-%         disp('lowering threshold')
-%     end
-% end
-% I=imadjust(I);
-% I = medfilt2(I,[2 3]);
-% I=imgaussfilt(I,1);
+
 if AmplitudeThreshold > .001 & AmplitudeThreshold < .999
     brightThreshold=prctile(I(:),AmplitudeThreshold*100);
 else
     disp('Warning! Amplitude Percentile Threshold Must be (0 > 1), Reverting to Default (.825)');
-    brightThreshold=prctile(I(:),825);
+    brightThreshold=prctile(I(:),82.5);
 end
 
 if EntropyThreshold < .001 | EntropyThreshold > .999 
@@ -46,8 +22,7 @@ end
 
 % % Get index of the time points where aplitude is greater than theshold
 % % iteratively lower threshholds until at least 6 points are selected
-[amplitude,ridgeFreq] = max((I));
-%amplitude = smooth(amplitude,0.1,'rlowess')';
+[amplitude,ridgeFreq] = max(I,[],1);
 iter = 1;
 greaterthannoise = false(1, size(I, 2));
 while sum(greaterthannoise)<5
@@ -60,10 +35,14 @@ while sum(greaterthannoise)<5
     end
     iter = iter + 1;
     if iter > 2
-        disp('lowering threshold')
+        disp('Not enough contour points: lowering threshold')
+    end
+    if iter > 10
+       disp('Warning: Extremely short call or no discernable contour')
+       greaterthannoise = logical(ones(1,width(ridgeFreq)));
+       break
     end
 end
-
 
 % index of time points
 stats.ridgeTime = find(greaterthannoise);
@@ -83,10 +62,8 @@ spectrange = SampleRate / 2000; % get frequency range of spectrogram in KHz
 FreqScale = spectrange / (1 + floor(nfft / 2)); % kHz per pixel
 TimeScale = (windowsize - noverlap) / SampleRate; % seconds per pixel
 
-
 %% Frequency gradient of spectrogram
 [~, stats.FilteredImage] = imgradientxy(I);
-
 
 %% Signal to Noise Ratio
 stats.SignalToNoise = mean(1 - stats.Entropy(stats.ridgeTime));
@@ -131,7 +108,7 @@ ridgePower = 2*ridgePower / SampleRate;
 ridgePower = 10 * log10(ridgePower);
 
 % Mean power of the call contour
-stats.MaxPower = mean(ridgePower);
+stats.MeanPower = mean(ridgePower);
 % Power of the call contour
 stats.Power = ridgePower;
 
