@@ -58,6 +58,7 @@ noverlap = round(rate * options.overlap);
 nfft = round(rate * options.nfft);
     
 if make_spectrogram
+    % gather full column
     audio = audioReader.AudioSamples(box(1), box(1) + box(3));
 
     [s, fr, ti, p] = spectrogram(audio,windowsize,noverlap,nfft,rate,'yaxis');

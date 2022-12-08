@@ -8,8 +8,10 @@ images = zeros([options.imageSize, size(ClusteringData, 1)]);
 for i = 1:size(ClusteringData, 1)
     images(:,:,:,i) = imresize(ClusteringData.Spectrogram{i}, options.imageSize(1:2));
 end
+
+randoimages=randi(i,[1,32]);
 try
-figure; montage(images(:,:,:,1:32) ./ 256);
+    figure; montage(images(:,:,:,randoimages) ./ 256);
 catch
     Disp('Not Enough Images Silly Billy'); 
 end
@@ -26,3 +28,4 @@ XTest   = images(:,:,:,valInd);
 % Train the network
 [encoderNet, decoderNet] = train_vae(encoderNet, decoderNet, XTrain, XTest);
 
+end

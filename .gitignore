@@ -3,5 +3,6 @@ settings.mat
 *.asv
 Training/
 Detections/*.mat
+Clustering/*.mat
 Audio/
 *.jpg

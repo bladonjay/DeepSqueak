@@ -1,7 +1,9 @@
-function [encoderNet, decoderNet] = VAE_model()
+function [encoderNet, decoderNet] = VAE_model(latentDim)
 
 
-latentDim = 32;
+if ~exist('latentDim','Var')
+    latentDim = 32;
+end
 imageSize = [128, 128, 1];
 
 encoderLG = layerGraph([

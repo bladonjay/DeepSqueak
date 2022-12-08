@@ -48,18 +48,23 @@ audiodata = {};
 Calls = [];
 for j = 1:length(fileName)
     [Calls_tmp,  audiodata{j}, loaded_ClusteringData] = loadCallfile(fullfile(filePath,fileName{j}),handles);
-    % If the files is extracted contours, rather than a detection file
-    if ~isempty(loaded_ClusteringData)
-        ClusteringData = [ClusteringData; table2cell(loaded_ClusteringData)];
-        continue
-    else
-        % Remove calls that aren't accepted
-        if ~p.Results.for_denoise
-        Calls_tmp = Calls_tmp(Calls_tmp.Accept == 1 & ~ismember(Calls_tmp.Type,'Noise'), :);
+    if ~isempty(Calls_tmp)
+       
+        % If the files is extracted contours, rather than a detection file
+        if ~isempty(loaded_ClusteringData)
+            ClusteringData = [ClusteringData; table2cell(loaded_ClusteringData)];
+            continue
+        else
+            % Remove calls that aren't accepted
+            if ~p.Results.for_denoise
+                Calls_tmp = Calls_tmp(Calls_tmp.Accept == 1 & ~ismember(Calls_tmp.Type,'Noise'), :);
+            end 
+            Calls_tmp=Calls_tmp(:,{'Box','Score','Type','Accept'});
+
+            % Create a variable that contains the index of audiodata to use
+            Calls_tmp.audiodata_index = repmat(j, height(Calls_tmp), 1);
+            Calls = cat(1,Calls,Calls_tmp);
         end
-        % Create a variable that contains the index of audiodata to use
-        Calls_tmp.audiodata_index = repmat(j, height(Calls_tmp), 1);
-        Calls = [Calls; Calls_tmp];
     end
 end
 
@@ -108,7 +113,7 @@ for i = 1:height(Calls)
     waitbar(i/height(Calls),h, sprintf('Loading File %u of %u', Calls.audiodata_index(i), length(fileName)));
     
     % Change the audio file if needed
-    if Calls.audiodata_index(i) ~= currentAudioFile;
+    if Calls.audiodata_index(i) ~= currentAudioFile
         audioReader.audiodata = audiodata{Calls.audiodata_index(i)};
         currentAudioFile = Calls.audiodata_index(i);
         perFileCallID = 0;
@@ -120,15 +125,20 @@ for i = 1:height(Calls)
     % im = mat2gray(flipud(I), prctile(I, [1 99], 'all')); % normalize brightness
     pow(pow==0)=.01;
     pow = log10(pow);
-    pow = rescale(imcomplement(abs(pow)));
-    % Create Adjusted Image for Identification
-    xTile=ceil(size(pow,1)/10);
-    yTile=ceil(size(pow,2)/10);
+    pow = rescale(imcomplement(abs(pow))); % abs the vals, invert
+    % Create Adjusted Image for Identification i think this degrades the
+    % image...
+   % flattening would be better here...
+
+    xTile=ceil(size(pow,1)/10); % 10 tiles in the x
+    yTile=ceil(size(pow,2)/10); % 10 tiles in the y
+    % this effectively flattens the image
     if xTile>1 && yTile>1
     im = adapthisteq(flipud(pow),'NumTiles',[xTile yTile],'ClipLimit',.005,'Distribution','rayleigh','Alpha',.4);
     else
     im = adapthisteq(flipud(pow),'NumTiles',[2 2],'ClipLimit',.005,'Distribution','rayleigh','Alpha',.4);    
     end
+    %im=SmoothMat2(flipud(pow),[20,20],[5 5]); % 
 
     if p.Results.forClustering
         stats = CalculateStats(I,wind,noverlap,nfft,rate,box,handles.data.settings.EntropyThreshold,handles.data.settings.AmplitudeThreshold);
@@ -150,7 +160,7 @@ for i = 1:height(Calls)
         {[filePath fileName{Calls.audiodata_index(i)}]} % File path
         {perFileCallID} % Call ID in file
         {stats.Power}
-        {box(4)}
+        {box(4)} % freq height
         ]'];
     
     clustAssign = [clustAssign; Calls.Type(i)];

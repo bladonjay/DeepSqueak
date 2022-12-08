@@ -39,7 +39,6 @@ switch inputParameters
         % Get the data
         [ClusteringData, clustAssign] = CreateClusteringData(handles, 'forClustering', true);
         
-        
         %% Extract features
         ReshapedX   = cell2mat(cellfun(@(x) imresize(x',[1 9]) ,ClusteringData.xFreq,'UniformOutput',0));
         slope       = diff(ReshapedX,1,2);
@@ -103,7 +102,11 @@ switch embeddingType
     case 't-SNE'
         embed = tsne(data,'Verbose',1,'Perplexity',perplexity);
     case 'UMAP'
-        embed = run_umap(data);
+        if ~contains(path,'C:\Users\Jadhavlab\Documents\gitRepos\USV_Analysis\Umapfx\umap')
+            addpath(genpath('C:\Users\Jadhavlab\Documents\gitRepos\USV_Analysis\Umapfx\umap'));
+        end
+        [embed2,umap2,clusterid] = run_umap(data);
+        rmpath(genpath('C:\Users\Jadhavlab\Documents\gitRepos\USV_Analysis\Umapfx\umap'));
 end
 % Rescale values between 0 and 1
 embed = (embed - min(embed)) ./ (max(embed)-min(embed));
